@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
-    "build": "npx @nestjs/cli build",
+    "build": "./node_modules/.bin/nest build",
     "start": "node dist/main",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "typecheck": "tsc --noEmit",
