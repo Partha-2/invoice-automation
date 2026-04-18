@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F4F6FA;
+  --foreground: #0C1220;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: #C8CEDC; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B0B6C8; }
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s ease forwards;
+}
+
+/* Focus rings */
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: #1A47CC;
+}

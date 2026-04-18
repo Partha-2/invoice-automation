@@ -1,0 +1,166 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  gstin     String?
+  pan       String?
+  stateCode String?
+  plan      String   @default("starter")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  vendors   Vendor[]
+  invoices Invoice[]
+  assets   Asset[]
+  auditLogs AuditLog[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  orgId        String
+  email        String
+  password    String
+  firstName   String?
+  lastName    String?
+  role        String   @default("USER")
+  mfaEnabled   Boolean  @default(false)
+  mfaSecret   String?
+  lastLogin   DateTime?
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  org           Organization @relation(fields: [orgId], references: [id])
+  approvedInvoices Invoice[] @relation("ApprovedByUser")
+  createdInvoices Invoice[] @relation("CreatedByUser")
+  auditLogs     AuditLog[]
+
+  @@unique([orgId, email])
+}
+
+model Vendor {
+  id             String   @id @default(uuid())
+  orgId          String
+  name           String
+  pan            String   @unique
+  gstin          String?  @unique
+  stateCode     String?
+  defaultTdsCode String?
+  accountNumber String?
+  ifscCode      String?
+  bankName      String?
+  email         String?
+  contactName  String?
+  phone        String?
+  vendorType   String   @default("COMPANY")
+  gstStatus    String   @default("ACTIVE")
+  panStatus    String   @default("VALID")
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  org      Organization @relation(fields: [orgId], references: [id])
+  invoices Invoice[]
+
+  @@unique([orgId, name])
+}
+
+model Invoice {
+  id              String    @id @default(uuid())
+  orgId           String
+  vendorId       String
+  invoiceNumber  String
+  invoiceDate    DateTime
+  description    String?
+  narration     String?
+  sourceUrl     String?
+  fileUrl       String?
+  fileName      String?
+
+  amount        Float
+  gstRate       Float     @default(18)
+  gstAmount     Float?
+  grossAmount  Float?
+
+  supplyType   String    @default("INTRA")
+  hsnCode      String?
+
+  cgst         Float?
+  sgst         Float?
+  igst         Float?
+
+  tdsCode      String?
+  tdsRate      Float?
+  tdsAmount   Float?
+  tdsSection  String?
+  isOverride   Boolean   @default(false)
+  overrideReason String?
+
+  isAsset      Boolean   @default(false)
+
+  status       String    @default("PENDING")
+  approvedBy  String?
+  approvedAt DateTime?
+  rejectedBy  String?
+  rejectedAt DateTime?
+  paidAt      DateTime?
+
+  createdBy   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  org          Organization @relation(fields: [orgId], references: [id])
+  vendor       Vendor       @relation(fields: [vendorId], references: [id])
+  approvedByUser User?       @relation("ApprovedByUser", fields: [approvedBy], references: [id])
+  createdByUser User        @relation("CreatedByUser", fields: [createdBy], references: [id])
+  asset        Asset?       @relation
+
+  @@unique([orgId, invoiceNumber])
+}
+
+model Asset {
+  id              String   @id @default(uuid())
+  orgId           String
+  linkedInvoiceId String?  @unique
+  name            String
+  purchaseValue   Float
+  purchaseDate   DateTime?
+  category       String   @default("IT_EQUIPMENT")
+  deprMethod     String   @default("SLM")
+  usefulLife    Int      @default(5)
+  residualValue Float    @default(0)
+  currentNbv    Float?
+  deprYtd       Float?
+  status         String   @default("ACTIVE")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  org     Organization @relation(fields: [orgId], references: [id])
+  invoice Invoice?     @relation(fields: [linkedInvoiceId], references: [id])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  orgId       String
+  userId      String?
+  action     String
+  entityType String?
+  entityId   String?
+  details    String?
+  ipAddress  String?
+  userAgent String?
+  createdAt  DateTime @default(now())
+
+  org   Organization @relation(fields: [orgId], references: [id])
+  user  User?        @relation(fields: [userId], references: [id])
+}
