@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "nest start --watch",
     "build": "tsc",
-    "start": "node dist/src/main",
+    "postinstall": "prisma generate",
+    "start": "node dist/src/main.js",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "typecheck": "tsc --noEmit",
     "test": "jest",
